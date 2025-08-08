@@ -1,25 +1,31 @@
 import React, { useState } from "react";
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { login } from "../redux/authSlice";
+import api from "../api/axios";
 
 const Login: React.FC = () => {
-    const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [emailError, setEmailError] = useState("");
   const [passwordError, setPasswordError] = useState("");
+  const [serverError, setServerError] = useState("");
 
   const [emailFocused, setEmailFocused] = useState(false);
   const [passwordFocused, setPasswordFocused] = useState(false);
 
-  const validateEmail = (email: string) => {
-    const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return regex.test(email);
-  };
+  const validateEmail = (email: string) =>
+    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+
     setEmailError("");
     setPasswordError("");
+    setServerError("");
 
     let isValid = true;
 
@@ -35,10 +41,46 @@ const Login: React.FC = () => {
 
     if (!isValid) return;
 
-    // just logging for now
-    console.log("Email:", email);
-    console.log("Password:", password);
-    navigate('/tasks');
+    try {
+      const response = await api.post("/login", {
+        email,
+        password,
+      });
+
+      const { user, token } = response.data;
+
+      console.log("api response user:", user);
+      console.log("api response token:", token);
+
+      if (!user || !token) {
+        setServerError("Invalid response from server.");
+        return;
+      }
+
+      const userWithAdminFlag = {
+        ...user,
+        isAdmin: user.role === "admin", //user
+      };
+
+      console.log("modified user with isAdmin flag:", userWithAdminFlag);
+
+      dispatch(login({ user: userWithAdminFlag, token }));
+
+      console.log("fispatched login with:", {
+        user: userWithAdminFlag,
+        token,
+      });
+
+      navigate("/tasks");
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (error: any) {
+      console.log("Login error response:", error.response);
+      if (error.response?.status === 401) {
+        alert("Invalid credentials. Please try again.");
+      } else {
+        alert("Server error. Please try again later.");
+      }
+    }
   };
 
   return (
@@ -46,7 +88,7 @@ const Login: React.FC = () => {
       <div className="flex-1 ml-80 flex flex-col items-start justify-center py-10">
         <div className="w-full max-w-md">
           <form className="space-y-6" onSubmit={handleLogin}>
-            {/* mail field */}
+            {/* mail */}
             <div className="relative w-full mt-4">
               <input
                 type="text"
@@ -57,8 +99,9 @@ const Login: React.FC = () => {
                 onFocus={() => setEmailFocused(true)}
                 onBlur={() => setEmailFocused(false)}
                 className={`
-                  peer w-full border-b py-2 bg-transparent placeholder-transparent focus:outline-none 
-                  transition-all
+                   peer w-full border-b py-2 bg-transparent placeholder-transparent
+  focus:outline-none focus:ring-0 focus:border-[#2C253D]
+  transition-colors duration-300
                   ${
                     emailError
                       ? "border-red-500 focus:border-red-500"
@@ -84,7 +127,7 @@ const Login: React.FC = () => {
               )}
             </div>
 
-            {/* password field */}
+            {/* password */}
             <div className="relative mt-10 w-full mt-4">
               <input
                 id="password"
@@ -95,7 +138,9 @@ const Login: React.FC = () => {
                 onFocus={() => setPasswordFocused(true)}
                 onBlur={() => setPasswordFocused(false)}
                 className={`
-                  peer w-full border-b py-2 bg-transparent placeholder-transparent focus:outline-none transition-all
+                  peer w-full border-b py-2 bg-transparent placeholder-transparent
+  focus:outline-none focus:ring-0 focus:border-[#2C253D]
+  transition-colors duration-300
                   ${
                     passwordError
                       ? "border-red-500 focus:border-red-500"
@@ -121,11 +166,14 @@ const Login: React.FC = () => {
               )}
             </div>
 
-            {/* submit btn */}
+            {serverError && (
+              <p className="text-red-500 text-sm mt-2">{serverError}</p>
+            )}
+
+            {/* submit */}
             <button
               type="submit"
               className="w-full mt-4 bg-blue-400 text-white py-3 rounded-full shadow-md hover:bg-blue-500 transition"
-              onClick={ handleLogin }
             >
               Log In
             </button>
