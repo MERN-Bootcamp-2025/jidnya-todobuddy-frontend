@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { logout } from "../redux/authSlice";
 import type { User } from "../redux/authSlice";
+import InviteModal from "./InviteModal";
 
 interface NavbarProps {
   user: User | null;
@@ -13,10 +14,11 @@ const Navbar: React.FC<NavbarProps> = ({ user }) => {
   const dispatch = useDispatch();
   const dropdownRef = useRef<HTMLDivElement>(null);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [showInviteModal, setShowInviteModal] = useState(false);
 
   if (!user) return null;
 
-  const avatarLetter = user.name?.charAt(0).toUpperCase() || "U";
+  const avatarLetter = user.email?.charAt(0).toUpperCase() || "U";
 
   const handleLogout = () => {
     dispatch(logout());
@@ -24,6 +26,7 @@ const Navbar: React.FC<NavbarProps> = ({ user }) => {
   };
 
   return (
+    <>
     <nav className="w-full bg-white border-b px-4 py-3 flex items-center justify-between">
       <div className="text-xl font-semibold text-gray-800">todobuddy.</div>
 
@@ -36,14 +39,14 @@ const Navbar: React.FC<NavbarProps> = ({ user }) => {
         </Link>
       </div>
 
-      {/* Avatar */}
+      {/* avatar */}
 
       <div className="flex items-center space-x-4">
         {user.role === "admin" && (
           <button
             className="hover:opacity-80 transition"
             title="Add User"
-            onClick={() => console.log("Add user clicked")}
+            onClick={() => setShowInviteModal(true)}
           >
             <img src="/plus-thin.png" alt="Add User" className="w-6 h-6" />
           </button>
@@ -72,6 +75,12 @@ const Navbar: React.FC<NavbarProps> = ({ user }) => {
         </div>
       </div>
     </nav>
+    <InviteModal
+        isOpen={showInviteModal}
+        onClose={() => setShowInviteModal(false)}
+        onSuccess={() => console.log("Invite sent successfully")}
+      />
+      </>
   );
 };
 
