@@ -6,6 +6,7 @@ import Navbar from "../components/Navbar";
 import api from "../api/axios";
 import PostModal from "../components/PostModal";
 import EditModal from "../components/EditModal";
+import DeleteModal from "../components/DeleteModal";
 
 interface Task {
   id: number;
@@ -19,10 +20,9 @@ const statusColors: Record<string, string> = {
   "To Do": "bg-green-100 text-green-700",
   "In Progress": "bg-blue-100 text-blue-700",
   "On Hold": "bg-gray-100 text-gray-700",
-  "Done": "bg-yellow-100 text-yellow-700",
+  Done: "bg-yellow-100 text-yellow-700",
   "Will Not Do": "bg-red-100 text-red-700",
 };
-
 
 const priorityColors: Record<string, string> = {
   High: "bg-red-100 text-red-700",
@@ -36,37 +36,37 @@ const MyTasks: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState("");
   const [priorityFilter, setPriorityFilter] = useState("");
   const [tasks, setTasks] = useState<Task[]>([]);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   const [showAddModal, setShowAddModal] = useState(false);
-  // const [setShowViewModal] = useState(false);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [showEditModal, setShowEditModal] = useState(false);
 
   const user = useSelector((state: RootState) => state.auth.user);
 
-const fetchTasks = async () => {
-  try {
-    const token = localStorage.getItem("token");
-    const res = await api.get("/todos", {
-      headers: { Authorization: `Bearer ${token}` },
-    });
+  const fetchTasks = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const res = await api.get("/todos", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
-    let todosArray: Task[] = [];
+      let todosArray: Task[] = [];
 
-    if (Array.isArray(res.data)) {
-      todosArray = res.data;
-    } else if (Array.isArray(res.data.data)) {
-      todosArray = res.data.data;
-    } else if (Array.isArray(res.data.todos)) {
-      todosArray = res.data.todos;
+      if (Array.isArray(res.data)) {
+        todosArray = res.data;
+      } else if (Array.isArray(res.data.data)) {
+        todosArray = res.data.data;
+      } else if (Array.isArray(res.data.todos)) {
+        todosArray = res.data.todos;
+      }
+
+      setTasks(todosArray);
+    } catch (error) {
+      console.error("Error fetching tasks:", error);
+      setTasks([]);
     }
-
-    setTasks(todosArray);
-  } catch (error) {
-    console.error("Error fetching tasks:", error);
-    setTasks([]);
-  }
-};
+  };
 
   useEffect(() => {
     fetchTasks();
@@ -142,42 +142,44 @@ const fetchTasks = async () => {
                 <p className="text-sm text-gray-500">{task.description}</p>
                 <div className="mt-2 flex space-x-2">
                   <span
-                    className={`px-2 py-1 text-xs rounded ${statusColors[task.status] || ""}`}
+                    className={`px-2 py-1 text-xs rounded ${
+                      statusColors[task.status] || ""
+                    }`}
                   >
                     {task.status}
                   </span>
                   <span
-                    className={`px-2 py-1 text-xs rounded ${priorityColors[task.priority] || ""}`}
+                    className={`px-2 py-1 text-xs rounded ${
+                      priorityColors[task.priority] || ""
+                    }`}
                   >
                     {task.priority}
                   </span>
                 </div>
               </div>
-<div className="flex space-x-3">
-  <img
-    src="/edit-thin.svg"
-    alt="Edit"
-    className="w-5 h-5 cursor-pointer hover:opacity-75"
-    onClick={() => {
-      setSelectedTask(task);
-      setShowEditModal(true);
-    }}
-  />
-  <img
-    src="/delete-thin.png"
-    alt="Delete"
-    className="w-5 h-5 cursor-pointer hover:opacity-75"
-    onClick={() => {
-      setSelectedTask(task);
-      // setShowViewModal(true);
-    }}
-  />
-</div>
+              <div className="flex space-x-3">
+                <img
+                  src="/edit-thin.svg"
+                  alt="Edit"
+                  className="w-5 h-5 cursor-pointer hover:opacity-75"
+                  onClick={() => {
+                    setSelectedTask(task);
+                    setShowEditModal(true);
+                  }}
+                />
+                <img
+                  src="/delete-thin.png"
+                  alt="Delete"
+                  className="w-5 h-5 cursor-pointer hover:opacity-75"
+                  onClick={() => {
+                    setSelectedTask(task);
+                    setShowDeleteModal(true);
+                  }}
+                />
+              </div>
             </div>
-            
           ))}
         </div>
-        
       </div>
 
       {/* Post Modal */}
@@ -186,17 +188,28 @@ const fetchTasks = async () => {
         onClose={() => setShowAddModal(false)}
         onSuccess={fetchTasks}
       />
-<EditModal
-  isOpen={showEditModal}
-  task={selectedTask}
-  onClose={() => {
-    setShowEditModal(false);
-    setSelectedTask(null);
-  }}
-  onSuccess={fetchTasks}
-/>
-      
-    
+
+      {/* edit Modal */}
+      <EditModal
+        isOpen={showEditModal}
+        task={selectedTask}
+        onClose={() => {
+          setShowEditModal(false);
+          setSelectedTask(null);
+        }}
+        onSuccess={fetchTasks}
+      />
+
+      {/* delet Modal */}
+      <DeleteModal
+        isOpen={showDeleteModal}
+        taskId={selectedTask?.id || null}
+        onClose={() => {
+          setShowDeleteModal(false);
+          setSelectedTask(null);
+        }}
+        onSuccess={fetchTasks}
+      />
     </div>
   );
 };
