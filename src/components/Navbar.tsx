@@ -28,12 +28,12 @@ const Navbar: React.FC<NavbarProps> = ({ user }) => {
   return (
     <>
     <nav className="w-full bg-white border-b px-4 py-3 flex items-center justify-between">
-      <div className="text-xl font-semibold text-gray-800">todobuddy.</div>
+      <div className="text-xl text-gray-800">todobuddy.</div>
 
       <div className="flex space-x-4">
         <Link
           to="/tasks"
-          className="text-gray-700 hover:text-blue-600 font-medium transition"
+          className="text-gray-700 hover:text-blue-800 transition"
         >
           My Tasks
         </Link>
@@ -57,7 +57,7 @@ const Navbar: React.FC<NavbarProps> = ({ user }) => {
             onClick={() => setDropdownOpen(!dropdownOpen)}
             className="focus:outline-none"
           >
-            <div className="w-9 h-9 rounded-full bg-blue-400 text-white flex items-center justify-center font-semibold">
+            <div className="w-9 h-9 rounded-full bg-blue-600 text-white flex items-center justify-center font-semibold">
               {avatarLetter}
             </div>
           </button>
