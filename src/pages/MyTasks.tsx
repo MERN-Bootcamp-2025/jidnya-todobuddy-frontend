@@ -5,6 +5,7 @@ import type { RootState } from "../redux/store";
 import Navbar from "../components/Navbar";
 import api from "../api/axios";
 import PostModal from "../components/PostModal";
+import EditModal from "../components/EditModal";
 
 interface Task {
   id: number;
@@ -17,8 +18,11 @@ interface Task {
 const statusColors: Record<string, string> = {
   "To Do": "bg-green-100 text-green-700",
   "In Progress": "bg-blue-100 text-blue-700",
+  "On Hold": "bg-gray-100 text-gray-700",
   "Done": "bg-yellow-100 text-yellow-700",
+  "Will Not Do": "bg-red-100 text-red-700",
 };
+
 
 const priorityColors: Record<string, string> = {
   High: "bg-red-100 text-red-700",
@@ -34,6 +38,9 @@ const MyTasks: React.FC = () => {
   const [tasks, setTasks] = useState<Task[]>([]);
 
   const [showAddModal, setShowAddModal] = useState(false);
+  // const [setShowViewModal] = useState(false);
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+  const [showEditModal, setShowEditModal] = useState(false);
 
   const user = useSelector((state: RootState) => state.auth.user);
 
@@ -77,8 +84,6 @@ const fetchTasks = async () => {
 
     return matchesSearch && matchesStatus && matchesPriority;
   });
-
-
   return (
     <div>
       <Navbar user={user} />
@@ -148,17 +153,50 @@ const fetchTasks = async () => {
                   </span>
                 </div>
               </div>
+<div className="flex space-x-3">
+  <img
+    src="/edit-thin.svg"
+    alt="Edit"
+    className="w-5 h-5 cursor-pointer hover:opacity-75"
+    onClick={() => {
+      setSelectedTask(task);
+      setShowEditModal(true);
+    }}
+  />
+  <img
+    src="/delete-thin.png"
+    alt="Delete"
+    className="w-5 h-5 cursor-pointer hover:opacity-75"
+    onClick={() => {
+      setSelectedTask(task);
+      // setShowViewModal(true);
+    }}
+  />
+</div>
             </div>
+            
           ))}
         </div>
+        
       </div>
 
-      {/* post */}
+      {/* Post Modal */}
       <PostModal
         isOpen={showAddModal}
         onClose={() => setShowAddModal(false)}
         onSuccess={fetchTasks}
       />
+<EditModal
+  isOpen={showEditModal}
+  task={selectedTask}
+  onClose={() => {
+    setShowEditModal(false);
+    setSelectedTask(null);
+  }}
+  onSuccess={fetchTasks}
+/>
+      
+    
     </div>
   );
 };
