@@ -75,18 +75,23 @@ const PostModal: React.FC<PostModalProps> = ({ isOpen, onClose, onSuccess }) => 
         </button>
       }
     >
+       <div>
+      <label>Title:</label>
       <input
         placeholder="Title"
         value={title}
         onChange={(e) => setTitle(e.target.value)}
         className="w-full border px-3 py-2 mb-3 rounded"
       />
+      <label className="mt-4 block">Description:</label>
       <textarea
+      // maxLength="250"
         placeholder="Description"
         value={description}
         onChange={(e) => setDescription(e.target.value)}
         className="w-full border px-3 py-2 mb-3 rounded"
       />
+      <label className="mt-4 block">Completion Date:</label>
       <input
         type="date"
         value={dueDate}
@@ -117,6 +122,7 @@ const PostModal: React.FC<PostModalProps> = ({ isOpen, onClose, onSuccess }) => 
           <option value="Done">Done</option>
           <option value="Will Not Do">Will Not Do</option>
         </select>
+      </div>
       </div>
     </Modal>
   );

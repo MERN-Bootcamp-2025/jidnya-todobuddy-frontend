@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { login } from "../redux/authSlice";
 import api from "../api/axios";
+import "./Login.css";
 
 const Login: React.FC = () => {
   const dispatch = useDispatch();
@@ -84,9 +85,16 @@ const Login: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex md:flex-row bg-white text-[#2C253D]">
-      <div className="flex-1 ml-80 flex flex-col items-start justify-center py-10">
+    <div className="login-page min-h-screen flex md:flex-row bg-white text-[#2C253D]">
+      <div className="flex-1 ml-80 flex text-xl flex-col items-start justify-center py-10">
         <div className="w-full max-w-md">
+          <h6 className="text-3xl ">
+            <span className="text-black">Welcome to </span>
+            <span className="text-blue-700 font-semibold">todobuddy.</span>
+          </h6>
+
+          <p className="mt-2">To get started, please login here!</p>
+          <br />
           <form className="space-y-6" onSubmit={handleLogin}>
             {/* mail */}
             <div className="relative w-full mt-4">
@@ -170,10 +178,10 @@ const Login: React.FC = () => {
               <p className="text-red-500 text-sm mt-2">{serverError}</p>
             )}
 
-            {/* submit */}
+            {/* submit btn*/}
             <button
               type="submit"
-              className="w-full mt-4 bg-blue-400 text-white py-3 rounded-full shadow-md hover:bg-blue-500 transition"
+              className="w-full mt-4 bg-blue-500 text-white py-3 rounded-full shadow-md hover:bg-blue-600 transition"
             >
               Log In
             </button>

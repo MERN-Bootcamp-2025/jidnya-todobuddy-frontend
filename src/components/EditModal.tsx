@@ -92,7 +92,8 @@ const EditModal: React.FC<EditModalProps> = ({
         </div>
       }
     >
-      <div className="space-y-4">
+      <div>
+        <label>Title:</label>
         <input
           type="text"
           placeholder="Title"
@@ -100,12 +101,15 @@ const EditModal: React.FC<EditModalProps> = ({
           onChange={(e) => setTitle(e.target.value)}
           className="w-full border px-3 py-2 rounded"
         />
+        <label className="mt-4 block">Description:</label>
         <textarea
+         // maxLength="250"
           placeholder="Description"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           className="w-full border px-3 py-2 rounded"
         />
+        <label className="mt-4 block">Status:</label>
         <select
           value={status}
           onChange={(e) => setStatus(e.target.value)}
@@ -117,6 +121,7 @@ const EditModal: React.FC<EditModalProps> = ({
           <option value="done">Done</option>
           <option value="will not do">Will Not Do</option>
         </select>
+        <label className="mt-4 block">Priority:</label>
         <select
           value={priority}
           onChange={(e) => setPriority(e.target.value)}

@@ -7,6 +7,7 @@ import api from "../api/axios";
 import PostModal from "../components/PostModal";
 import EditModal from "../components/EditModal";
 import DeleteModal from "../components/DeleteModal";
+import Chip from "../components/Chip";
 
 interface Task {
   id: number;
@@ -16,31 +17,18 @@ interface Task {
   priority: "High" | "Medium" | "Low" | "Critical";
 }
 
-const statusColors: Record<string, string> = {
-  "todo": "bg-green-100 text-green-700",
-  "in progress": "bg-blue-100 text-blue-700",
-  "on hold": "bg-gray-200 text-gray-700",
-  "done": "bg-yellow-100 text-yellow-700",
-  "will not do": "bg-red-100 text-red-700",
-};
-
-const priorityColors: Record<string, string> = {
-  high: "bg-red-100 text-red-700",
-  medium: "bg-yellow-100 text-yellow-700",
-  low: "bg-green-100 text-green-700",
-  critical: "bg-purple-100 text-purple-700",
-};
-
 const MyTasks: React.FC = () => {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [priorityFilter, setPriorityFilter] = useState("");
   const [tasks, setTasks] = useState<Task[]>([]);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-
   const [showAddModal, setShowAddModal] = useState(false);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [showEditModal, setShowEditModal] = useState(false);
+
+  const [currentPage, setCurrentPage] = useState(1);
+  const tasksPerPage = 5;
 
   const user = useSelector((state: RootState) => state.auth.user);
 
@@ -52,7 +40,6 @@ const MyTasks: React.FC = () => {
       });
 
       let todosArray: Task[] = [];
-
       if (Array.isArray(res.data)) {
         todosArray = res.data;
       } else if (Array.isArray(res.data.data)) {
@@ -77,17 +64,30 @@ const MyTasks: React.FC = () => {
     const matchesSearch =
       task.title.toLowerCase().includes(searchTerm) ||
       task.description.toLowerCase().includes(searchTerm);
-
     const matchesStatus = statusFilter
       ? task.status.toLowerCase() === statusFilter.toLowerCase()
       : true;
-
     const matchesPriority = priorityFilter
       ? task.priority.toLowerCase() === priorityFilter.toLowerCase()
       : true;
 
     return matchesSearch && matchesStatus && matchesPriority;
   });
+
+  const totalPages = Math.ceil(filteredTasks.length / tasksPerPage);
+  const startIndex = (currentPage - 1) * tasksPerPage;
+  const currentTasks = filteredTasks.slice(
+    startIndex,
+    startIndex + tasksPerPage
+  );
+
+  const handlePrev = () => {
+    if (currentPage > 1) setCurrentPage((prev) => prev - 1);
+  };
+
+  const handleNext = () => {
+    if (currentPage < totalPages) setCurrentPage((prev) => prev + 1);
+  };
 
   return (
     <div>
@@ -137,32 +137,37 @@ const MyTasks: React.FC = () => {
 
         {/* task list */}
         <div className="space-y-4">
-          {filteredTasks.length > 0 ? (
-            filteredTasks.map((task) => (
+          {currentTasks.length > 0 ? (
+            currentTasks.map((task) => (
               <div
                 key={task.id}
                 className="p-4 border rounded-md shadow-sm bg-white flex justify-between items-center"
               >
                 <div>
-                  <h3 className="text-lg text-gray-800 font-normal">
+                  <h3
+                    className={`text-lg ${
+                      task.status.toLowerCase() === "done"
+                        ? "line-through text-gray-500"
+                        : ""
+                    }`}
+                  >
                     {task.title}
                   </h3>
+
                   <p className="text-sm text-gray-500">{task.description}</p>
                   <div className="mt-2 flex space-x-2">
-                    <span
-                      className={`px-2 py-1 text-xs rounded ${
-                        statusColors[task.status.toLowerCase()] || ""
-                      }`}
-                    >
-                      {task.status}
-                    </span>
-                    <span
-                      className={`px-2 py-1 text-xs rounded ${
-                        priorityColors[task.priority.toLowerCase()] || ""
-                      }`}
-                    >
-                      {task.priority}
-                    </span>
+                    <Chip
+                      type="status"
+                      value={task.status}
+                      taskId={task.id}
+                      onUpdated={fetchTasks}
+                    />
+                    <Chip
+                      type="priority"
+                      value={task.priority}
+                      taskId={task.id}
+                      onUpdated={fetchTasks}
+                    />
                   </div>
                 </div>
                 <div className="flex space-x-3">
@@ -191,9 +196,40 @@ const MyTasks: React.FC = () => {
             <p className="text-gray-500">No tasks found.</p>
           )}
         </div>
+
+        {/* pagination */}
+        {totalPages > 1 && (
+          <div className="flex justify-center items-center space-x-2 mt-6">
+            <button
+              onClick={handlePrev}
+              disabled={currentPage === 1}
+              className="px-3 py-1 border rounded-md disabled:opacity-50"
+            >
+              Prev
+            </button>
+            {[...Array(totalPages)].map((_, idx) => (
+              <button
+                key={idx + 1}
+                onClick={() => setCurrentPage(idx + 1)}
+                className={`px-3 py-1 border rounded-md ${
+                  currentPage === idx + 1 ? "bg-blue-600 text-white" : ""
+                }`}
+              >
+                {idx + 1}
+              </button>
+            ))}
+            <button
+              onClick={handleNext}
+              disabled={currentPage === totalPages}
+              className="px-3 py-1 border rounded-md disabled:opacity-50"
+            >
+              Next
+            </button>
+          </div>
+        )}
       </div>
 
-      {/* all modals */}
+      {/* modals */}
       <PostModal
         isOpen={showAddModal}
         onClose={() => setShowAddModal(false)}
