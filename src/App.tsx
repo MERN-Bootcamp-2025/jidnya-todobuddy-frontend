@@ -6,11 +6,9 @@ import NotFound from "./components/NotFound"
 
 
 function App() {
-  
 
   return (
     <>
-
     <Routes>
       <Route path="/" element = { <Login/>} />
       <Route path="/tasks" element = { <MyTasks/>} />
